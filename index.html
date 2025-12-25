@@ -20,51 +20,81 @@
         .logo { font-weight: 800; font-size: 1.4rem; letter-spacing: 1px; }
         .logo span { color: var(--primary); text-shadow: 0 0 15px var(--primary-glow); }
         
-        /* Genişlik burada artırıldı: 1200px yapıldı */
         .container { max-width: 1200px; margin: 40px auto; padding: 0 20px; display: none; }
         
+        /* Dashboard Eklemeleri */
         .stats-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 20px; margin-bottom: 40px; }
         .stat-card { background: var(--bg-card); padding: 25px; border-radius: 12px; border: 1px solid var(--border); text-align: center; }
         .stat-card h3 { font-size: 2.2rem; color: var(--primary); margin-bottom: 5px; }
 
+        /* YETKİLİ KARNESİ STİLLERİ */
+        .staff-section { margin-top: 40px; background: var(--bg-card); padding: 25px; border-radius: 15px; border: 1px solid var(--border); }
+        .staff-table { width: 100%; border-collapse: collapse; margin-top: 15px; }
+        .staff-table th { text-align: left; padding: 12px; color: var(--text-muted); border-bottom: 1px solid var(--border); font-size: 0.85rem; }
+        .staff-table td { padding: 15px 12px; border-bottom: 1px solid rgba(255,255,255,0.02); }
+        .rank-badge { background: var(--primary); color: white; padding: 2px 8px; border-radius: 4px; font-size: 0.7rem; font-weight: bold; }
+
+        /* GLOBAL ARAMA STİLLERİ */
+        .hub-search-area { margin-bottom: 30px; }
+        .hub-search-area input { width: 100%; background: var(--bg-card); border: 1px solid var(--border); padding: 15px 20px; border-radius: 10px; color: white; font-size: 1rem; outline: none; transition: 0.3s; }
+        .hub-search-area input:focus { border-color: var(--primary); box-shadow: 0 0 15px var(--primary-glow); }
+
+        /* BİLET LİSTESİ */
+        .history-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(300px, 1fr)); gap: 20px; margin-top: 20px; }
+        .history-box { background: var(--bg-card); border: 1px solid var(--border); padding: 20px; border-radius: 12px; cursor: pointer; transition: 0.3s; }
+        .history-box:hover { transform: translateY(-5px); border-color: var(--primary); }
+        .history-box h4 { margin-bottom: 10px; color: var(--primary); }
+        .history-box p { font-size: 0.85rem; color: var(--text-muted); }
+
+        /* Transcript Stilleri */
         .transcript-wrap { background: var(--bg-card); border-radius: 15px; border: 1px solid var(--border); overflow: hidden; box-shadow: 0 10px 30px rgba(0,0,0,0.5); }
-        
-        /* Arama ve Header Alanı */
         .t-header { padding: 30px; border-bottom: 1px solid var(--border); background: rgba(255,255,255,0.01); display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 20px; }
         .search-box { position: relative; flex-grow: 1; max-width: 400px; }
         .search-box input { width: 100%; background: var(--bg-darker); border: 1px solid var(--border); padding: 12px 15px 12px 40px; border-radius: 8px; color: white; outline: none; transition: 0.3s; }
-        .search-box input:focus { border-color: var(--primary); box-shadow: 0 0 10px var(--primary-glow); }
         .search-box i { position: absolute; left: 15px; top: 50%; transform: translateY(-50%); color: var(--text-muted); }
-
-        /* Mesaj Alanı */
         .msg-area { padding: 30px; display: flex; flex-direction: column; gap: 12px; max-height: 70vh; overflow-y: auto; }
-        .msg-item { background: rgba(255,255,255,0.02); padding: 18px; border-radius: 10px; border-left: 4px solid var(--primary); transition: 0.2s; }
-        .msg-item:hover { background: rgba(255,255,255,0.04); transform: translateX(5px); }
-        .u-name { color: var(--primary); font-weight: 800; margin-right: 12px; font-size: 1.05rem; }
+        .msg-item { background: rgba(255,255,255,0.02); padding: 15px; border-radius: 10px; border-left: 4px solid var(--primary); }
+        .u-name { color: var(--primary); font-weight: 800; margin-right: 10px; }
         .back-btn { margin-bottom: 20px; color: var(--primary); cursor: pointer; display: inline-flex; align-items: center; gap: 10px; font-weight: 600; font-size: 0.9rem; text-decoration: none; }
-        
-        /* Kaydırma Çubuğu Güzelleştirme */
-        .msg-area::-webkit-scrollbar { width: 6px; }
-        .msg-area::-webkit-scrollbar-thumb { background: var(--border); border-radius: 10px; }
     </style>
 </head>
 <body>
     <nav class="navbar"><div class="logo">STEELPORT <span>HUB</span></div></nav>
 
     <div class="container" id="main-dashboard">
-        <div class="stats-grid">
-            <div class="stat-card"><h3>1,248</h3><p>Toplam Bilet</p></div>
-            <div class="stat-card"><h3>42</h3><p>Aktif Destek</p></div>
-            <div class="stat-card"><h3>99%</h3><p>Memnuniyet</p></div>
+        <div class="stats-grid" id="global-stats">
+            <div class="stat-card"><h3 id="stat-total-tickets">0</h3><p>Toplam Kayıt</p></div>
+            <div class="stat-card"><h3 id="stat-total-messages">0</h3><p>Arşivlenen Mesaj</p></div>
+            <div class="stat-card"><h3>99%</h3><p>Veri Güvenliği</p></div>
         </div>
-        <h2 style="margin-bottom: 20px;">Nasıl Kullanılır?</h2>
-        <p style="color: var(--text-muted); line-height: 1.8;">
-            Bu panel Discord botunuzla entegre çalışır. Bir bilet kapatıldığında botunuzun oluşturduğu özel linke tıklayarak bilet geçmişini görüntüleyebilirsiniz.
-        </p>
+
+        <div class="hub-search-area">
+            <h2 style="margin-bottom:15px;">Tüm Arşivlerde Ara</h2>
+            <input type="text" id="globalSearch" placeholder="Bilet adı, sunucu veya mesaj içeriği yazın..." onkeyup="searchInAllTickets()">
+        </div>
+
+        <div class="history-grid" id="ticket-history-list">
+            </div>
+
+        <div class="staff-section">
+            <h2 class="section-title"><i class="fas fa-chart-line"></i> Yetkili Karnesi (Performans)</h2>
+            <table class="staff-table">
+                <thead>
+                    <tr>
+                        <th>YETKİLİ ADI</th>
+                        <th>KAPATILAN BİLET</th>
+                        <th>TOPLAM MESAJ</th>
+                        <th>DURUM</th>
+                    </tr>
+                </thead>
+                <tbody id="staff-performance-body">
+                    </tbody>
+            </table>
+        </div>
     </div>
 
     <div class="container" id="transcript-view">
-        <a href="index.html" class="back-btn"><i class="fas fa-arrow-left"></i> Hub'a Dön</a>
+        <a href="index.html" class="back-btn" onclick="location.reload()"><i class="fas fa-arrow-left"></i> Hub'a Dön</a>
         <div class="transcript-wrap">
             <div class="t-header">
                 <div>
@@ -73,7 +103,7 @@
                 </div>
                 <div class="search-box">
                     <i class="fas fa-search"></i>
-                    <input type="text" id="searchInput" placeholder="Mesajlarda ara..." onkeyup="filterMessages()">
+                    <input type="text" id="searchInput" placeholder="Bu bilette ara..." onkeyup="filterMessages()">
                 </div>
             </div>
             <div id="messages-area" class="msg-area"></div>
@@ -81,19 +111,74 @@
     </div>
 
     <script>
+        // Bilet içi arama (Eski fonksiyonun korunmuş hali)
         function filterMessages() {
             const input = document.getElementById('searchInput');
             const filter = input.value.toLowerCase();
             const messages = document.getElementsByClassName('msg-item');
-
             for (let i = 0; i < messages.length; i++) {
                 const text = messages[i].innerText.toLowerCase();
-                if (text.includes(filter)) {
-                    messages[i].style.display = "";
-                } else {
-                    messages[i].style.display = "none";
-                }
+                messages[i].style.display = text.includes(filter) ? "" : "none";
             }
+        }
+
+        // TÜM BİLETLERDE ARAMA (Yeni Özellik)
+        function searchInAllTickets() {
+            const query = document.getElementById('globalSearch').value.toLowerCase();
+            const history = JSON.parse(localStorage.getItem('ticket_history') || '[]');
+            const filtered = history.filter(item => 
+                item.channel.toLowerCase().includes(query) || 
+                item.server.toLowerCase().includes(query) ||
+                JSON.stringify(item.messages).toLowerCase().includes(query)
+            );
+            renderHistoryList(filtered);
+        }
+
+        // GEÇMİŞİ LİSTELE
+        function renderHistoryList(data) {
+            const list = document.getElementById('ticket-history-list');
+            if (data.length === 0) {
+                list.innerHTML = "<p class='empty-state'>Kayıt bulunamadı.</p>";
+                return;
+            }
+            list.innerHTML = data.map((item, index) => `
+                <div class="history-box" onclick="window.location.search = '?v=${item.raw}'">
+                    <h4>#${item.channel}</h4>
+                    <p><i class="fas fa-server"></i> ${item.server}</p>
+                    <p><i class="far fa-calendar-alt"></i> ${item.date}</p>
+                    <p style="margin-top:10px; color:var(--primary)">Detayları Gör →</p>
+                </div>
+            `).join('');
+        }
+
+        // YETKİLİ KARNESİNİ HESAPLA (Yeni Özellik)
+        function calculateStaffStats() {
+            const history = JSON.parse(localStorage.getItem('ticket_history') || '[]');
+            const staffData = {};
+            let totalMsgs = 0;
+
+            history.forEach(ticket => {
+                ticket.messages.forEach(m => {
+                    totalMsgs++;
+                    if (!staffData[m.u]) staffData[m.u] = { name: m.u, tickets: new Set(), msgs: 0 };
+                    staffData[m.u].msgs++;
+                    staffData[m.u].tickets.add(ticket.channel);
+                });
+            });
+
+            document.getElementById('stat-total-tickets').innerText = history.length;
+            document.getElementById('stat-total-messages').innerText = totalMsgs;
+
+            const staffList = Object.values(staffData).sort((a, b) => b.msgs - a.msgs);
+            const tbody = document.getElementById('staff-performance-body');
+            tbody.innerHTML = staffList.map(staff => `
+                <tr>
+                    <td><b>${staff.name}</b></td>
+                    <td>${staff.tickets.size} Bilet</td>
+                    <td>${staff.msgs} Mesaj</td>
+                    <td><span class="rank-badge">${staff.msgs > 50 ? 'EFSANE' : 'AKTİF'}</span></td>
+                </tr>
+            `).join('');
         }
 
         window.onload = function() {
@@ -107,16 +192,28 @@
                     document.getElementById('ticket-title').innerText = decodedData.channel || "Bilet Transcript";
                     document.getElementById('ticket-info').innerText = `Tarih: ${decodedData.date || 'Belirtilmedi'} | Sunucu: ${decodedData.server || 'Steelport'}`;
                     
+                    // Geçmişe Kaydet (Arama ve Karne için)
+                    let history = JSON.parse(localStorage.getItem('ticket_history') || '[]');
+                    const exists = history.find(h => h.raw === rawData);
+                    if (!exists) {
+                        decodedData.raw = rawData;
+                        history.push(decodedData);
+                        localStorage.setItem('ticket_history', JSON.stringify(history));
+                    }
+
                     let html = "";
                     decodedData.messages.forEach(msg => {
                         html += `<div class="msg-item"><span class="u-name">${msg.u}:</span><span>${msg.t}</span></div>`;
                     });
                     document.getElementById('messages-area').innerHTML = html;
                 } catch(e) {
-                    document.getElementById('messages-area').innerHTML = "<p style='color:var(--danger); padding:20px;'>Hata: Veri okunamadı. Link hatalı olabilir!</p>";
+                    document.getElementById('messages-area').innerHTML = "<p style='color:var(--danger); padding:20px;'>Hata: Veri okunamadı!</p>";
                 }
             } else {
                 document.getElementById('main-dashboard').style.display = 'block';
+                const history = JSON.parse(localStorage.getItem('ticket_history') || '[]');
+                renderHistoryList(history);
+                calculateStaffStats();
             }
         };
     </script>

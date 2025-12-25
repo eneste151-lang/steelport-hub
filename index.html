@@ -3,176 +3,212 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Steelport Hub | Secure Archive</title>
+    <title>Steelport Hub | Secure Archive System</title>
     <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;600;700;800&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/crypto-js/4.1.1/crypto-js.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
     <style>
         :root {
-            --bg-darker: #080a0f; --bg-main: #0f121a; --bg-card: #161a25;
+            --bg: #080a0f; --card: #0f121a; --item: #161a25;
             --primary: #0066ff; --primary-glow: rgba(0, 102, 255, 0.3);
-            --text-white: #ffffff; --text-muted: #8b949e; --border: rgba(255, 255, 255, 0.05);
-            --danger: #f23f42;
+            --text: #ffffff; --muted: #8b949e; --border: rgba(255, 255, 255, 0.05);
         }
-        * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Outfit', sans-serif; }
-        body { background-color: var(--bg-darker); color: var(--text-white); overflow: hidden; }
+        * { margin:0; padding:0; box-sizing:border-box; font-family:'Outfit',sans-serif; }
+        body { background: var(--bg); color: var(--text); min-height: 100vh; overflow-x: hidden; }
         
-        /* GİRİŞ EKRANI (LOCKED) */
-        #auth-overlay { position: fixed; inset: 0; background: var(--bg-darker); z-index: 9999; display: flex; align-items: center; justify-content: center; flex-direction: column; }
-        .auth-card { background: var(--bg-card); padding: 40px; border-radius: 15px; border: 1px solid var(--border); text-align: center; width: 100%; max-width: 400px; box-shadow: 0 20px 50px rgba(0,0,0,0.5); }
-        .auth-card i { font-size: 3rem; color: var(--primary); margin-bottom: 20px; }
-        .auth-card input { width: 100%; padding: 15px; background: var(--bg-darker); border: 1px solid var(--border); border-radius: 8px; color: white; margin-top: 20px; outline: none; text-align: center; font-size: 1.1rem; letter-spacing: 2px; }
-        .auth-card button { width: 100%; padding: 15px; background: var(--primary); border: none; border-radius: 8px; color: white; font-weight: 800; margin-top: 15px; cursor: pointer; transition: 0.3s; }
-        .auth-card button:hover { background: #0052cc; transform: translateY(-2px); }
+        .navbar { height: 70px; background: var(--card); border-bottom: 1px solid var(--border); display: flex; align-items: center; justify-content: space-between; padding: 0 40px; position: sticky; top:0; z-index: 100; }
+        .logo { font-weight: 800; font-size: 1.4rem; letter-spacing: 1px; cursor: pointer; }
+        .logo span { color: var(--primary); }
 
-        /* NAVBAR */
-        .navbar { height: 70px; background: var(--bg-main); border-bottom: 1px solid var(--border); display: flex; align-items: center; justify-content: space-between; padding: 0 40px; position: sticky; top: 0; z-index: 100; }
-        .logo { font-weight: 800; font-size: 1.4rem; } .logo span { color: var(--primary); }
-        .logout-btn { color: var(--danger); cursor: pointer; font-size: 0.9rem; font-weight: 600; }
+        .container { max-width: 1100px; margin: 40px auto; padding: 0 20px; display: none; animation: fadeIn 0.4s ease; }
+        @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
 
-        /* CONTAINER */
-        .container { max-width: 1200px; margin: 40px auto; padding: 0 20px; display: none; }
-        
-        /* DASHBOARD / KARNE / ARAMA */
-        .stats-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 20px; margin-bottom: 40px; }
-        .stat-card { background: var(--bg-card); padding: 25px; border-radius: 12px; border: 1px solid var(--border); text-align: center; }
-        .stat-card h3 { font-size: 2.2rem; color: var(--primary); margin-bottom: 5px; }
-        .hub-search input { width: 100%; background: var(--bg-card); border: 1px solid var(--border); padding: 15px 20px; border-radius: 10px; color: white; margin-bottom: 30px; outline: none; }
-        .history-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(300px, 1fr)); gap: 20px; }
-        .history-box { background: var(--bg-card); border: 1px solid var(--border); padding: 20px; border-radius: 12px; cursor: pointer; transition: 0.3s; }
-        .history-box:hover { border-color: var(--primary); transform: translateY(-3px); }
+        /* GİRİŞ EKRANI */
+        .login-card { background: var(--card); padding: 40px; border-radius: 20px; border: 1px solid var(--border); text-align: center; max-width: 450px; margin: 100px auto; box-shadow: 0 20px 50px rgba(0,0,0,0.5); }
+        .login-card i { font-size: 3.5rem; color: var(--primary); margin-bottom: 20px; }
+        .login-card input { width: 100%; padding: 15px; background: var(--bg); border: 1px solid var(--border); border-radius: 10px; color: white; margin: 20px 0; outline: none; text-align: center; font-size: 1.2rem; }
+        .login-card button { width: 100%; padding: 15px; background: var(--primary); color: white; border: none; border-radius: 10px; font-weight: 800; cursor: pointer; transition: 0.3s; }
+        .login-card button:hover { box-shadow: 0 0 20px var(--primary-glow); transform: translateY(-2px); }
 
-        /* TRANSCRIPT AREA */
-        .transcript-wrap { background: var(--bg-card); border-radius: 15px; border: 1px solid var(--border); overflow: hidden; height: 75vh; display: flex; flex-direction: column; }
-        .t-header { padding: 25px; border-bottom: 1px solid var(--border); background: rgba(0,0,0,0.1); display: flex; justify-content: space-between; align-items: center; }
-        .msg-area { padding: 30px; overflow-y: auto; display: flex; flex-direction: column; gap: 12px; }
-        .msg-item { background: rgba(255,255,255,0.02); padding: 15px; border-radius: 10px; border-left: 4px solid var(--primary); }
-        .u-name { color: var(--primary); font-weight: 800; margin-right: 10px; }
-        .back-btn { margin-bottom: 20px; color: var(--primary); display: inline-flex; align-items: center; gap: 10px; text-decoration: none; font-weight: 600; }
+        /* DASHBOARD */
+        .dashboard-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 30px; }
+        .ticket-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(320px, 1fr)); gap: 20px; }
+        .ticket-box { background: var(--card); border: 1px solid var(--border); padding: 25px; border-radius: 15px; cursor: pointer; transition: 0.3s; }
+        .ticket-box:hover { border-color: var(--primary); transform: translateY(-5px); background: var(--item); }
+        .ticket-box h4 { font-size: 1.3rem; margin-bottom: 10px; color: var(--primary); }
+        .ticket-box p { font-size: 0.85rem; color: var(--muted); }
 
-        ::-webkit-scrollbar { width: 6px; }
-        ::-webkit-scrollbar-thumb { background: var(--border); border-radius: 10px; }
+        /* TICKET VIEWER */
+        .action-btns { display: flex; gap: 10px; margin-bottom: 20px; }
+        .btn { padding: 10px 18px; border-radius: 8px; border: 1px solid var(--border); background: var(--card); color: white; cursor: pointer; font-weight: 600; font-size: 0.85rem; display: flex; align-items: center; gap: 8px; }
+        .btn:hover { background: var(--primary); border-color: var(--primary); }
+        .transcript-wrap { background: var(--card); border-radius: 15px; border: 1px solid var(--border); overflow: hidden; }
+        .t-header { padding: 30px; border-bottom: 1px solid var(--border); background: rgba(0,0,0,0.2); }
+        .msg-area { padding: 30px; display: flex; flex-direction: column; gap: 15px; max-height: 65vh; overflow-y: auto; }
+        .msg-item { display: flex; gap: 15px; background: rgba(255,255,255,0.02); padding: 15px; border-radius: 12px; }
+        .avatar { width: 40px; height: 40px; border-radius: 50%; background: var(--primary); flex-shrink: 0; background-size: cover; }
+        .msg-content { flex-grow: 1; }
+        .u-info { font-weight: 800; font-size: 0.95rem; margin-bottom: 5px; display: flex; justify-content: space-between; }
+        .text { color: #d0d6e0; line-height: 1.5; font-size: 0.9rem; }
+        .att-img { margin-top: 10px; max-width: 100%; border-radius: 8px; border: 1px solid var(--border); }
     </style>
 </head>
 <body>
 
-    <div id="auth-overlay">
-        <div class="auth-card">
-            <i class="fas fa-shield-alt"></i>
-            <h2>Steelport Giriş</h2>
-            <p style="color:var(--text-muted); font-size:0.8rem; margin-top:5px;">Erişim için yetkili anahtarını girin.</p>
-            <input type="password" id="tokenInput" placeholder="••••••••">
-            <button onclick="checkAuth()">Sistemi Aç</button>
-        </div>
+<nav class="navbar">
+    <div class="logo" onclick="showDashboard()">STEELPORT <span>HUB</span></div>
+    <div style="font-size: 0.8rem; color: var(--muted);"><i class="fas fa-shield-alt"></i> AES-256 Protected</div>
+</nav>
+
+<div class="container" id="section-login">
+    <div class="login-card">
+        <i class="fas fa-key"></i>
+        <h2>Erişim Kilidi</h2>
+        <p style="color: var(--muted); font-size: 0.85rem;">Bu bilet şifrelenmiştir. Devam etmek için kodu girin.</p>
+        <input type="text" id="passInput" placeholder="6 Haneli Şifre">
+        <button onclick="unlockTicket()">KİLİDİ AÇ</button>
     </div>
+</div>
 
-    <nav class="navbar">
-        <div class="logo">STEELPORT <span>HUB</span></div>
-        <div class="logout-btn" onclick="logout()"><i class="fas fa-sign-out-alt"></i> Çıkış Yap</div>
-    </nav>
-
-    <div class="container" id="main-dashboard">
-        <div class="stats-grid">
-            <div class="stat-card"><h3 id="stat-count">0</h3><p>Kayıtlı Bilet</p></div>
-            <div class="stat-card"><h3>99.9%</h3><p>Gizlilik</p></div>
-        </div>
-        <div class="hub-search">
-            <input type="text" id="globalSearch" placeholder="Arşivlerde ara..." onkeyup="searchAll()">
-        </div>
-        <div class="history-grid" id="historyList"></div>
+<div class="container" id="section-dashboard">
+    <div class="dashboard-header">
+        <h2><i class="fas fa-folder-open"></i> Arşivim (Dashboard)</h2>
+        <button class="btn" style="color:var(--danger)" onclick="clearArchive()">Temizle</button>
     </div>
+    <div class="ticket-grid" id="dashboardGrid"></div>
+</div>
 
-    <div class="container" id="transcript-view">
-        <a href="index.html" class="back-btn" onclick="location.reload()"><i class="fas fa-arrow-left"></i> Geri Dön</a>
-        <div class="transcript-wrap">
-            <div class="t-header">
-                <div>
-                    <h1 id="ticket-title" style="font-size: 1.3rem;">#Yükleniyor</h1>
-                    <p id="ticket-info" style="color:var(--text-muted); font-size:0.8rem;"></p>
+<div class="container" id="section-viewer">
+    <div class="action-btns">
+        <button class="btn" onclick="exportPDF()"><i class="fas fa-file-pdf"></i> PDF İndir</button>
+        <button class="btn" onclick="exportHTML()"><i class="fas fa-code"></i> HTML İndir</button>
+        <button class="btn" onclick="copyLink()"><i class="fas fa-share"></i> Paylaş</button>
+    </div>
+    <div class="transcript-wrap" id="printArea">
+        <div class="t-header">
+            <h1 id="view-title">#Kanal</h1>
+            <p id="view-meta"></p>
+        </div>
+        <div class="msg-area" id="view-messages"></div>
+    </div>
+</div>
+
+<script>
+    const params = new URLSearchParams(window.location.search);
+    const rawV = params.get('v');
+
+    window.onload = () => {
+        if (rawV) {
+            // Eğer daha önce bu veriyi bu tarayıcıda açtıysak şifre sorma
+            const archive = JSON.parse(localStorage.getItem('steelport_archive') || '[]');
+            const saved = archive.find(i => i.raw === rawV);
+            if (saved) {
+                renderTicket(saved.data);
+            } else {
+                document.getElementById('section-login').style.display = 'block';
+            }
+        } else {
+            showDashboard();
+        }
+    };
+
+    function unlockTicket() {
+        const pass = document.getElementById('passInput').value.trim();
+        try {
+            // AES Decrypt
+            const key = CryptoJS.enc.Utf8.parse(pass.padEnd(32, ' ').substring(0, 32));
+            const iv = CryptoJS.enc.Utf8.parse('1234567890123456');
+            const decrypted = CryptoJS.AES.decrypt(rawV, key, { iv: iv });
+            const data = JSON.parse(decrypted.toString(CryptoJS.enc.Utf8));
+
+            // Arşive Kaydet (Sonsuz Login için)
+            saveToArchive(rawV, data);
+            renderTicket(data);
+        } catch(e) {
+            alert("Hatalı Şifre veya Bozuk Veri!");
+        }
+    }
+
+    function saveToArchive(raw, data) {
+        let archive = JSON.parse(localStorage.getItem('steelport_archive') || '[]');
+        if (!archive.find(i => i.raw === raw)) {
+            archive.push({ raw, data });
+            localStorage.setItem('steelport_archive', JSON.stringify(archive));
+        }
+    }
+
+    function renderTicket(data) {
+        document.querySelectorAll('.container').forEach(c => c.style.display = 'none');
+        document.getElementById('section-viewer').style.display = 'block';
+
+        document.getElementById('view-title').innerText = "#" + data.channel;
+        document.getElementById('view-meta').innerText = `${data.server} | ${data.date}`;
+        
+        const area = document.getElementById('view-messages');
+        area.innerHTML = data.messages.map(m => `
+            <div class="msg-item">
+                <div class="avatar" style="background-image: url('${m.a || ''}')"></div>
+                <div class="msg-content">
+                    <div class="u-info"><span>${m.u}</span><span style="opacity:0.3; font-size:0.7rem;">${m.d}</span></div>
+                    <div class="text">${m.t}</div>
+                    ${m.i ? `<img src="${m.i}" class="att-img">` : ''}
                 </div>
-                <input type="text" id="inSearch" placeholder="Bilet içi ara..." onkeyup="filterIn()" style="background:var(--bg-darker); border:1px solid var(--border); color:white; padding:8px; border-radius:5px; outline:none;">
             </div>
-            <div id="msgArea" class="msg-area"></div>
-        </div>
-    </div>
+        `).join('');
+    }
 
-    <script>
-        // BURAYA KENDİ ŞİFRENİ YAZ (BOTUN BU ŞİFREYİ BİLMESİNE GEREK YOK)
-        const MASTER_TOKEN = "ENES123"; 
-
-        function checkAuth() {
-            const val = document.getElementById('tokenInput').value;
-            if(val === MASTER_TOKEN) {
-                localStorage.setItem('staff_auth', 'true');
-                location.reload();
-            } else {
-                alert("Hatalı Anahtar!");
-            }
+    function showDashboard() {
+        document.querySelectorAll('.container').forEach(c => c.style.display = 'none');
+        document.getElementById('section-dashboard').style.display = 'block';
+        
+        const archive = JSON.parse(localStorage.getItem('steelport_archive') || '[]');
+        const grid = document.getElementById('dashboardGrid');
+        
+        if (archive.length === 0) {
+            grid.innerHTML = "<p style='color:var(--muted)'>Henüz kaydedilmiş bilet yok.</p>";
+            return;
         }
 
-        function logout() {
-            localStorage.removeItem('staff_auth');
-            location.reload();
+        grid.innerHTML = archive.map(item => `
+            <div class="ticket-box" onclick="location.href='?v=${item.raw}'">
+                <h4>#${item.data.channel}</h4>
+                <p><i class="fas fa-server"></i> ${item.data.server}</p>
+                <p><i class="far fa-calendar-alt"></i> ${item.data.date}</p>
+            </div>
+        `).join('');
+    }
+
+    function clearArchive() {
+        if(confirm("Tüm arşivi temizlemek istediğine emin misin?")) {
+            localStorage.removeItem('steelport_archive');
+            location.href = "index.html";
         }
+    }
 
-        function searchAll() {
-            const q = document.getElementById('globalSearch').value.toLowerCase();
-            const history = JSON.parse(localStorage.getItem('archive') || '[]');
-            const filtered = history.filter(h => h.channel.toLowerCase().includes(q) || h.server.toLowerCase().includes(q));
-            renderHistory(filtered);
-        }
+    function exportPDF() {
+        const el = document.getElementById('printArea');
+        html2pdf().from(el).set({
+            margin: 1,
+            filename: 'transcript.pdf',
+            html2canvas: { scale: 2, backgroundColor: '#0f121a' },
+            jsPDF: { unit: 'in', format: 'letter', orientation: 'portrait' }
+        }).save();
+    }
 
-        function filterIn() {
-            const q = document.getElementById('inSearch').value.toLowerCase();
-            const items = document.getElementsByClassName('msg-item');
-            for(let i of items) i.style.display = i.innerText.toLowerCase().includes(q) ? "" : "none";
-        }
+    function exportHTML() {
+        const content = document.getElementById('printArea').innerHTML;
+        const blob = new Blob([`<html><head><style>body{background:#080a0f;color:white;font-family:sans-serif;padding:20px;}</style></head><body>${content}</body></html>`], {type: "text/html"});
+        const a = document.createElement("a");
+        a.href = URL.createObjectURL(blob);
+        a.download = "transcript.html";
+        a.click();
+    }
 
-        function renderHistory(data) {
-            const list = document.getElementById('historyList');
-            document.getElementById('stat-count').innerText = data.length;
-            list.innerHTML = data.map(item => `
-                <div class="history-box" onclick="window.location.search = '?v=${item.raw}'">
-                    <h4>#${item.channel}</h4>
-                    <p>${item.server} | ${item.date}</p>
-                </div>
-            `).join('') || '<p style="color:var(--text-muted)">Arşiv boş.</p>';
-        }
-
-        window.onload = function() {
-            // Güvenlik Kontrolü
-            if(localStorage.getItem('staff_auth') !== 'true') {
-                document.getElementById('auth-overlay').style.display = 'flex';
-                return;
-            }
-            document.getElementById('auth-overlay').style.display = 'none';
-
-            const params = new URLSearchParams(window.location.search);
-            const v = params.get('v');
-
-            if(v) {
-                document.getElementById('transcript-view').style.display = 'block';
-                try {
-                    const data = JSON.parse(decodeURIComponent(escape(atob(v))));
-                    document.getElementById('ticket-title').innerText = "#" + data.channel;
-                    document.getElementById('ticket-info').innerText = data.server + " | " + data.date;
-                    
-                    // Arşive ekle
-                    let archive = JSON.parse(localStorage.getItem('archive') || '[]');
-                    if(!archive.find(x => x.raw === v)) {
-                        data.raw = v;
-                        archive.push(data);
-                        localStorage.setItem('archive', JSON.stringify(archive));
-                    }
-
-                    document.getElementById('msgArea').innerHTML = data.messages.map(m => `
-                        <div class="msg-item"><span class="u-name">${m.u}:</span><span>${m.t}</span></div>
-                    `).join('');
-                } catch(e) { alert("Veri hatası!"); }
-            } else {
-                document.getElementById('main-dashboard').style.display = 'block';
-                renderHistory(JSON.parse(localStorage.getItem('archive') || '[]'));
-            }
-        };
-    </script>
+    function copyLink() {
+        navigator.clipboard.writeText(window.location.href);
+        alert("Bağlantı kopyalandı!");
+    }
+</script>
 </body>
 </html>

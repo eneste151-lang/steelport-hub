@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Steelport Hub | Ticket Transcript System</title>
+    <title>Steelport Hub | Secure Archive</title>
     <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;600;700;800&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <style>
@@ -11,209 +11,166 @@
             --bg-darker: #080a0f; --bg-main: #0f121a; --bg-card: #161a25;
             --primary: #0066ff; --primary-glow: rgba(0, 102, 255, 0.3);
             --text-white: #ffffff; --text-muted: #8b949e; --border: rgba(255, 255, 255, 0.05);
-            --success: #23a559; --danger: #f23f42;
+            --danger: #f23f42;
         }
         * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Outfit', sans-serif; }
-        body { background-color: var(--bg-darker); color: var(--text-white); overflow-x: hidden; }
+        body { background-color: var(--bg-darker); color: var(--text-white); overflow: hidden; }
         
-        .navbar { height: 70px; background: var(--bg-main); border-bottom: 1px solid var(--border); display: flex; align-items: center; padding: 0 40px; position: sticky; top: 0; z-index: 100; }
-        .logo { font-weight: 800; font-size: 1.4rem; letter-spacing: 1px; }
-        .logo span { color: var(--primary); text-shadow: 0 0 15px var(--primary-glow); }
-        
+        /* GİRİŞ EKRANI (LOCKED) */
+        #auth-overlay { position: fixed; inset: 0; background: var(--bg-darker); z-index: 9999; display: flex; align-items: center; justify-content: center; flex-direction: column; }
+        .auth-card { background: var(--bg-card); padding: 40px; border-radius: 15px; border: 1px solid var(--border); text-align: center; width: 100%; max-width: 400px; box-shadow: 0 20px 50px rgba(0,0,0,0.5); }
+        .auth-card i { font-size: 3rem; color: var(--primary); margin-bottom: 20px; }
+        .auth-card input { width: 100%; padding: 15px; background: var(--bg-darker); border: 1px solid var(--border); border-radius: 8px; color: white; margin-top: 20px; outline: none; text-align: center; font-size: 1.1rem; letter-spacing: 2px; }
+        .auth-card button { width: 100%; padding: 15px; background: var(--primary); border: none; border-radius: 8px; color: white; font-weight: 800; margin-top: 15px; cursor: pointer; transition: 0.3s; }
+        .auth-card button:hover { background: #0052cc; transform: translateY(-2px); }
+
+        /* NAVBAR */
+        .navbar { height: 70px; background: var(--bg-main); border-bottom: 1px solid var(--border); display: flex; align-items: center; justify-content: space-between; padding: 0 40px; position: sticky; top: 0; z-index: 100; }
+        .logo { font-weight: 800; font-size: 1.4rem; } .logo span { color: var(--primary); }
+        .logout-btn { color: var(--danger); cursor: pointer; font-size: 0.9rem; font-weight: 600; }
+
+        /* CONTAINER */
         .container { max-width: 1200px; margin: 40px auto; padding: 0 20px; display: none; }
         
-        /* Dashboard Eklemeleri */
+        /* DASHBOARD / KARNE / ARAMA */
         .stats-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 20px; margin-bottom: 40px; }
         .stat-card { background: var(--bg-card); padding: 25px; border-radius: 12px; border: 1px solid var(--border); text-align: center; }
         .stat-card h3 { font-size: 2.2rem; color: var(--primary); margin-bottom: 5px; }
-
-        /* YETKİLİ KARNESİ STİLLERİ */
-        .staff-section { margin-top: 40px; background: var(--bg-card); padding: 25px; border-radius: 15px; border: 1px solid var(--border); }
-        .staff-table { width: 100%; border-collapse: collapse; margin-top: 15px; }
-        .staff-table th { text-align: left; padding: 12px; color: var(--text-muted); border-bottom: 1px solid var(--border); font-size: 0.85rem; }
-        .staff-table td { padding: 15px 12px; border-bottom: 1px solid rgba(255,255,255,0.02); }
-        .rank-badge { background: var(--primary); color: white; padding: 2px 8px; border-radius: 4px; font-size: 0.7rem; font-weight: bold; }
-
-        /* GLOBAL ARAMA STİLLERİ */
-        .hub-search-area { margin-bottom: 30px; }
-        .hub-search-area input { width: 100%; background: var(--bg-card); border: 1px solid var(--border); padding: 15px 20px; border-radius: 10px; color: white; font-size: 1rem; outline: none; transition: 0.3s; }
-        .hub-search-area input:focus { border-color: var(--primary); box-shadow: 0 0 15px var(--primary-glow); }
-
-        /* BİLET LİSTESİ */
-        .history-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(300px, 1fr)); gap: 20px; margin-top: 20px; }
+        .hub-search input { width: 100%; background: var(--bg-card); border: 1px solid var(--border); padding: 15px 20px; border-radius: 10px; color: white; margin-bottom: 30px; outline: none; }
+        .history-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(300px, 1fr)); gap: 20px; }
         .history-box { background: var(--bg-card); border: 1px solid var(--border); padding: 20px; border-radius: 12px; cursor: pointer; transition: 0.3s; }
-        .history-box:hover { transform: translateY(-5px); border-color: var(--primary); }
-        .history-box h4 { margin-bottom: 10px; color: var(--primary); }
-        .history-box p { font-size: 0.85rem; color: var(--text-muted); }
+        .history-box:hover { border-color: var(--primary); transform: translateY(-3px); }
 
-        /* Transcript Stilleri */
-        .transcript-wrap { background: var(--bg-card); border-radius: 15px; border: 1px solid var(--border); overflow: hidden; box-shadow: 0 10px 30px rgba(0,0,0,0.5); }
-        .t-header { padding: 30px; border-bottom: 1px solid var(--border); background: rgba(255,255,255,0.01); display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 20px; }
-        .search-box { position: relative; flex-grow: 1; max-width: 400px; }
-        .search-box input { width: 100%; background: var(--bg-darker); border: 1px solid var(--border); padding: 12px 15px 12px 40px; border-radius: 8px; color: white; outline: none; transition: 0.3s; }
-        .search-box i { position: absolute; left: 15px; top: 50%; transform: translateY(-50%); color: var(--text-muted); }
-        .msg-area { padding: 30px; display: flex; flex-direction: column; gap: 12px; max-height: 70vh; overflow-y: auto; }
+        /* TRANSCRIPT AREA */
+        .transcript-wrap { background: var(--bg-card); border-radius: 15px; border: 1px solid var(--border); overflow: hidden; height: 75vh; display: flex; flex-direction: column; }
+        .t-header { padding: 25px; border-bottom: 1px solid var(--border); background: rgba(0,0,0,0.1); display: flex; justify-content: space-between; align-items: center; }
+        .msg-area { padding: 30px; overflow-y: auto; display: flex; flex-direction: column; gap: 12px; }
         .msg-item { background: rgba(255,255,255,0.02); padding: 15px; border-radius: 10px; border-left: 4px solid var(--primary); }
         .u-name { color: var(--primary); font-weight: 800; margin-right: 10px; }
-        .back-btn { margin-bottom: 20px; color: var(--primary); cursor: pointer; display: inline-flex; align-items: center; gap: 10px; font-weight: 600; font-size: 0.9rem; text-decoration: none; }
+        .back-btn { margin-bottom: 20px; color: var(--primary); display: inline-flex; align-items: center; gap: 10px; text-decoration: none; font-weight: 600; }
+
+        ::-webkit-scrollbar { width: 6px; }
+        ::-webkit-scrollbar-thumb { background: var(--border); border-radius: 10px; }
     </style>
 </head>
 <body>
-    <nav class="navbar"><div class="logo">STEELPORT <span>HUB</span></div></nav>
 
-    <div class="container" id="main-dashboard">
-        <div class="stats-grid" id="global-stats">
-            <div class="stat-card"><h3 id="stat-total-tickets">0</h3><p>Toplam Kayıt</p></div>
-            <div class="stat-card"><h3 id="stat-total-messages">0</h3><p>Arşivlenen Mesaj</p></div>
-            <div class="stat-card"><h3>99%</h3><p>Veri Güvenliği</p></div>
-        </div>
-
-        <div class="hub-search-area">
-            <h2 style="margin-bottom:15px;">Tüm Arşivlerde Ara</h2>
-            <input type="text" id="globalSearch" placeholder="Bilet adı, sunucu veya mesaj içeriği yazın..." onkeyup="searchInAllTickets()">
-        </div>
-
-        <div class="history-grid" id="ticket-history-list">
-            </div>
-
-        <div class="staff-section">
-            <h2 class="section-title"><i class="fas fa-chart-line"></i> Yetkili Karnesi (Performans)</h2>
-            <table class="staff-table">
-                <thead>
-                    <tr>
-                        <th>YETKİLİ ADI</th>
-                        <th>KAPATILAN BİLET</th>
-                        <th>TOPLAM MESAJ</th>
-                        <th>DURUM</th>
-                    </tr>
-                </thead>
-                <tbody id="staff-performance-body">
-                    </tbody>
-            </table>
+    <div id="auth-overlay">
+        <div class="auth-card">
+            <i class="fas fa-shield-alt"></i>
+            <h2>Steelport Giriş</h2>
+            <p style="color:var(--text-muted); font-size:0.8rem; margin-top:5px;">Erişim için yetkili anahtarını girin.</p>
+            <input type="password" id="tokenInput" placeholder="••••••••">
+            <button onclick="checkAuth()">Sistemi Aç</button>
         </div>
     </div>
 
+    <nav class="navbar">
+        <div class="logo">STEELPORT <span>HUB</span></div>
+        <div class="logout-btn" onclick="logout()"><i class="fas fa-sign-out-alt"></i> Çıkış Yap</div>
+    </nav>
+
+    <div class="container" id="main-dashboard">
+        <div class="stats-grid">
+            <div class="stat-card"><h3 id="stat-count">0</h3><p>Kayıtlı Bilet</p></div>
+            <div class="stat-card"><h3>99.9%</h3><p>Gizlilik</p></div>
+        </div>
+        <div class="hub-search">
+            <input type="text" id="globalSearch" placeholder="Arşivlerde ara..." onkeyup="searchAll()">
+        </div>
+        <div class="history-grid" id="historyList"></div>
+    </div>
+
     <div class="container" id="transcript-view">
-        <a href="index.html" class="back-btn" onclick="location.reload()"><i class="fas fa-arrow-left"></i> Hub'a Dön</a>
+        <a href="index.html" class="back-btn" onclick="location.reload()"><i class="fas fa-arrow-left"></i> Geri Dön</a>
         <div class="transcript-wrap">
             <div class="t-header">
                 <div>
-                    <h1 id="ticket-title" style="font-size: 1.5rem;">Yükleniyor...</h1>
-                    <p id="ticket-info" style="color: var(--text-muted); font-size: 0.85rem; margin-top: 5px;"></p>
+                    <h1 id="ticket-title" style="font-size: 1.3rem;">#Yükleniyor</h1>
+                    <p id="ticket-info" style="color:var(--text-muted); font-size:0.8rem;"></p>
                 </div>
-                <div class="search-box">
-                    <i class="fas fa-search"></i>
-                    <input type="text" id="searchInput" placeholder="Bu bilette ara..." onkeyup="filterMessages()">
-                </div>
+                <input type="text" id="inSearch" placeholder="Bilet içi ara..." onkeyup="filterIn()" style="background:var(--bg-darker); border:1px solid var(--border); color:white; padding:8px; border-radius:5px; outline:none;">
             </div>
-            <div id="messages-area" class="msg-area"></div>
+            <div id="msgArea" class="msg-area"></div>
         </div>
     </div>
 
     <script>
-        // Bilet içi arama (Eski fonksiyonun korunmuş hali)
-        function filterMessages() {
-            const input = document.getElementById('searchInput');
-            const filter = input.value.toLowerCase();
-            const messages = document.getElementsByClassName('msg-item');
-            for (let i = 0; i < messages.length; i++) {
-                const text = messages[i].innerText.toLowerCase();
-                messages[i].style.display = text.includes(filter) ? "" : "none";
+        // BURAYA KENDİ ŞİFRENİ YAZ (BOTUN BU ŞİFREYİ BİLMESİNE GEREK YOK)
+        const MASTER_TOKEN = "ENES123"; 
+
+        function checkAuth() {
+            const val = document.getElementById('tokenInput').value;
+            if(val === MASTER_TOKEN) {
+                localStorage.setItem('staff_auth', 'true');
+                location.reload();
+            } else {
+                alert("Hatalı Anahtar!");
             }
         }
 
-        // TÜM BİLETLERDE ARAMA (Yeni Özellik)
-        function searchInAllTickets() {
-            const query = document.getElementById('globalSearch').value.toLowerCase();
-            const history = JSON.parse(localStorage.getItem('ticket_history') || '[]');
-            const filtered = history.filter(item => 
-                item.channel.toLowerCase().includes(query) || 
-                item.server.toLowerCase().includes(query) ||
-                JSON.stringify(item.messages).toLowerCase().includes(query)
-            );
-            renderHistoryList(filtered);
+        function logout() {
+            localStorage.removeItem('staff_auth');
+            location.reload();
         }
 
-        // GEÇMİŞİ LİSTELE
-        function renderHistoryList(data) {
-            const list = document.getElementById('ticket-history-list');
-            if (data.length === 0) {
-                list.innerHTML = "<p class='empty-state'>Kayıt bulunamadı.</p>";
-                return;
-            }
-            list.innerHTML = data.map((item, index) => `
+        function searchAll() {
+            const q = document.getElementById('globalSearch').value.toLowerCase();
+            const history = JSON.parse(localStorage.getItem('archive') || '[]');
+            const filtered = history.filter(h => h.channel.toLowerCase().includes(q) || h.server.toLowerCase().includes(q));
+            renderHistory(filtered);
+        }
+
+        function filterIn() {
+            const q = document.getElementById('inSearch').value.toLowerCase();
+            const items = document.getElementsByClassName('msg-item');
+            for(let i of items) i.style.display = i.innerText.toLowerCase().includes(q) ? "" : "none";
+        }
+
+        function renderHistory(data) {
+            const list = document.getElementById('historyList');
+            document.getElementById('stat-count').innerText = data.length;
+            list.innerHTML = data.map(item => `
                 <div class="history-box" onclick="window.location.search = '?v=${item.raw}'">
                     <h4>#${item.channel}</h4>
-                    <p><i class="fas fa-server"></i> ${item.server}</p>
-                    <p><i class="far fa-calendar-alt"></i> ${item.date}</p>
-                    <p style="margin-top:10px; color:var(--primary)">Detayları Gör →</p>
+                    <p>${item.server} | ${item.date}</p>
                 </div>
-            `).join('');
-        }
-
-        // YETKİLİ KARNESİNİ HESAPLA (Yeni Özellik)
-        function calculateStaffStats() {
-            const history = JSON.parse(localStorage.getItem('ticket_history') || '[]');
-            const staffData = {};
-            let totalMsgs = 0;
-
-            history.forEach(ticket => {
-                ticket.messages.forEach(m => {
-                    totalMsgs++;
-                    if (!staffData[m.u]) staffData[m.u] = { name: m.u, tickets: new Set(), msgs: 0 };
-                    staffData[m.u].msgs++;
-                    staffData[m.u].tickets.add(ticket.channel);
-                });
-            });
-
-            document.getElementById('stat-total-tickets').innerText = history.length;
-            document.getElementById('stat-total-messages').innerText = totalMsgs;
-
-            const staffList = Object.values(staffData).sort((a, b) => b.msgs - a.msgs);
-            const tbody = document.getElementById('staff-performance-body');
-            tbody.innerHTML = staffList.map(staff => `
-                <tr>
-                    <td><b>${staff.name}</b></td>
-                    <td>${staff.tickets.size} Bilet</td>
-                    <td>${staff.msgs} Mesaj</td>
-                    <td><span class="rank-badge">${staff.msgs > 50 ? 'EFSANE' : 'AKTİF'}</span></td>
-                </tr>
-            `).join('');
+            `).join('') || '<p style="color:var(--text-muted)">Arşiv boş.</p>';
         }
 
         window.onload = function() {
-            const params = new URLSearchParams(window.location.search);
-            const rawData = params.get('v');
+            // Güvenlik Kontrolü
+            if(localStorage.getItem('staff_auth') !== 'true') {
+                document.getElementById('auth-overlay').style.display = 'flex';
+                return;
+            }
+            document.getElementById('auth-overlay').style.display = 'none';
 
-            if (rawData) {
+            const params = new URLSearchParams(window.location.search);
+            const v = params.get('v');
+
+            if(v) {
                 document.getElementById('transcript-view').style.display = 'block';
                 try {
-                    const decodedData = JSON.parse(decodeURIComponent(escape(atob(rawData))));
-                    document.getElementById('ticket-title').innerText = decodedData.channel || "Bilet Transcript";
-                    document.getElementById('ticket-info').innerText = `Tarih: ${decodedData.date || 'Belirtilmedi'} | Sunucu: ${decodedData.server || 'Steelport'}`;
+                    const data = JSON.parse(decodeURIComponent(escape(atob(v))));
+                    document.getElementById('ticket-title').innerText = "#" + data.channel;
+                    document.getElementById('ticket-info').innerText = data.server + " | " + data.date;
                     
-                    // Geçmişe Kaydet (Arama ve Karne için)
-                    let history = JSON.parse(localStorage.getItem('ticket_history') || '[]');
-                    const exists = history.find(h => h.raw === rawData);
-                    if (!exists) {
-                        decodedData.raw = rawData;
-                        history.push(decodedData);
-                        localStorage.setItem('ticket_history', JSON.stringify(history));
+                    // Arşive ekle
+                    let archive = JSON.parse(localStorage.getItem('archive') || '[]');
+                    if(!archive.find(x => x.raw === v)) {
+                        data.raw = v;
+                        archive.push(data);
+                        localStorage.setItem('archive', JSON.stringify(archive));
                     }
 
-                    let html = "";
-                    decodedData.messages.forEach(msg => {
-                        html += `<div class="msg-item"><span class="u-name">${msg.u}:</span><span>${msg.t}</span></div>`;
-                    });
-                    document.getElementById('messages-area').innerHTML = html;
-                } catch(e) {
-                    document.getElementById('messages-area').innerHTML = "<p style='color:var(--danger); padding:20px;'>Hata: Veri okunamadı!</p>";
-                }
+                    document.getElementById('msgArea').innerHTML = data.messages.map(m => `
+                        <div class="msg-item"><span class="u-name">${m.u}:</span><span>${m.t}</span></div>
+                    `).join('');
+                } catch(e) { alert("Veri hatası!"); }
             } else {
                 document.getElementById('main-dashboard').style.display = 'block';
-                const history = JSON.parse(localStorage.getItem('ticket_history') || '[]');
-                renderHistoryList(history);
-                calculateStaffStats();
+                renderHistory(JSON.parse(localStorage.getItem('archive') || '[]'));
             }
         };
     </script>

@@ -6,103 +6,124 @@
     <title>Steelport Hub | Secure Archive System</title>
     <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;600;700;800&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    
     <script src="https://cdnjs.cloudflare.com/ajax/libs/crypto-js/4.1.1/crypto-js.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
+
     <style>
         :root {
             --bg: #080a0f; --card: #0f121a; --item: #161a25;
             --primary: #0066ff; --primary-glow: rgba(0, 102, 255, 0.3);
             --text: #ffffff; --muted: #8b949e; --border: rgba(255, 255, 255, 0.05);
+            --danger: #f23f42;
         }
         * { margin:0; padding:0; box-sizing:border-box; font-family:'Outfit',sans-serif; }
         body { background: var(--bg); color: var(--text); min-height: 100vh; overflow-x: hidden; }
         
+        /* NAVBAR */
         .navbar { height: 70px; background: var(--card); border-bottom: 1px solid var(--border); display: flex; align-items: center; justify-content: space-between; padding: 0 40px; position: sticky; top:0; z-index: 100; }
-        .logo { font-weight: 800; font-size: 1.4rem; letter-spacing: 1px; cursor: pointer; }
+        .logo { font-weight: 800; font-size: 1.4rem; letter-spacing: 1px; cursor: pointer; transition: 0.3s; }
         .logo span { color: var(--primary); }
+        .logo:hover { transform: scale(1.05); }
 
         .container { max-width: 1100px; margin: 40px auto; padding: 0 20px; display: none; animation: fadeIn 0.4s ease; }
         @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
 
         /* GİRİŞ EKRANI */
-        .login-card { background: var(--card); padding: 40px; border-radius: 20px; border: 1px solid var(--border); text-align: center; max-width: 450px; margin: 100px auto; box-shadow: 0 20px 50px rgba(0,0,0,0.5); }
-        .login-card i { font-size: 3.5rem; color: var(--primary); margin-bottom: 20px; }
-        .login-card input { width: 100%; padding: 15px; background: var(--bg); border: 1px solid var(--border); border-radius: 10px; color: white; margin: 20px 0; outline: none; text-align: center; font-size: 1.2rem; }
-        .login-card button { width: 100%; padding: 15px; background: var(--primary); color: white; border: none; border-radius: 10px; font-weight: 800; cursor: pointer; transition: 0.3s; }
-        .login-card button:hover { box-shadow: 0 0 20px var(--primary-glow); transform: translateY(-2px); }
+        .login-card { background: var(--card); padding: 50px 40px; border-radius: 20px; border: 1px solid var(--border); text-align: center; max-width: 450px; margin: 80px auto; box-shadow: 0 20px 50px rgba(0,0,0,0.5); }
+        .login-card i { font-size: 3.5rem; color: var(--primary); margin-bottom: 25px; display: block; }
+        .login-card h2 { margin-bottom: 10px; font-weight: 800; }
+        .login-card input { width: 100%; padding: 16px; background: var(--bg); border: 1px solid var(--border); border-radius: 12px; color: white; margin: 25px 0; outline: none; text-align: center; font-size: 1.3rem; letter-spacing: 3px; transition: 0.3s; }
+        .login-card input:focus { border-color: var(--primary); box-shadow: 0 0 15px var(--primary-glow); }
+        .login-card button { width: 100%; padding: 16px; background: var(--primary); color: white; border: none; border-radius: 12px; font-weight: 800; cursor: pointer; transition: 0.3s; font-size: 1rem; }
+        .login-card button:hover { box-shadow: 0 0 25px var(--primary-glow); transform: translateY(-2px); }
 
         /* DASHBOARD */
-        .dashboard-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 30px; }
+        .dashboard-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 35px; border-bottom: 1px solid var(--border); padding-bottom: 20px; }
         .ticket-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(320px, 1fr)); gap: 20px; }
-        .ticket-box { background: var(--card); border: 1px solid var(--border); padding: 25px; border-radius: 15px; cursor: pointer; transition: 0.3s; }
+        .ticket-box { background: var(--card); border: 1px solid var(--border); padding: 25px; border-radius: 15px; cursor: pointer; transition: 0.3s; position: relative; overflow: hidden; }
+        .ticket-box::before { content: ''; position: absolute; left: 0; top: 0; height: 100%; width: 4px; background: var(--primary); opacity: 0; transition: 0.3s; }
         .ticket-box:hover { border-color: var(--primary); transform: translateY(-5px); background: var(--item); }
-        .ticket-box h4 { font-size: 1.3rem; margin-bottom: 10px; color: var(--primary); }
-        .ticket-box p { font-size: 0.85rem; color: var(--muted); }
+        .ticket-box:hover::before { opacity: 1; }
+        .ticket-box h4 { font-size: 1.3rem; margin-bottom: 10px; color: var(--primary); font-weight: 800; }
+        .ticket-box p { font-size: 0.85rem; color: var(--muted); margin-bottom: 5px; }
 
         /* TICKET VIEWER */
-        .action-btns { display: flex; gap: 10px; margin-bottom: 20px; }
-        .btn { padding: 10px 18px; border-radius: 8px; border: 1px solid var(--border); background: var(--card); color: white; cursor: pointer; font-weight: 600; font-size: 0.85rem; display: flex; align-items: center; gap: 8px; }
-        .btn:hover { background: var(--primary); border-color: var(--primary); }
-        .transcript-wrap { background: var(--card); border-radius: 15px; border: 1px solid var(--border); overflow: hidden; }
-        .t-header { padding: 30px; border-bottom: 1px solid var(--border); background: rgba(0,0,0,0.2); }
-        .msg-area { padding: 30px; display: flex; flex-direction: column; gap: 15px; max-height: 65vh; overflow-y: auto; }
-        .msg-item { display: flex; gap: 15px; background: rgba(255,255,255,0.02); padding: 15px; border-radius: 12px; }
-        .avatar { width: 40px; height: 40px; border-radius: 50%; background: var(--primary); flex-shrink: 0; background-size: cover; }
+        .action-btns { display: flex; gap: 12px; margin-bottom: 25px; flex-wrap: wrap; }
+        .btn { padding: 12px 20px; border-radius: 10px; border: 1px solid var(--border); background: var(--card); color: white; cursor: pointer; font-weight: 700; font-size: 0.85rem; display: flex; align-items: center; gap: 10px; transition: 0.3s; }
+        .btn:hover { background: var(--primary); border-color: var(--primary); transform: translateY(-2px); }
+        .btn-danger:hover { background: var(--danger); border-color: var(--danger); }
+        
+        .transcript-wrap { background: var(--card); border-radius: 18px; border: 1px solid var(--border); overflow: hidden; box-shadow: 0 15px 40px rgba(0,0,0,0.4); }
+        .t-header { padding: 35px; border-bottom: 1px solid var(--border); background: linear-gradient(to bottom, rgba(255,255,255,0.02), transparent); }
+        .t-header h1 { font-size: 1.8rem; margin-bottom: 8px; }
+        
+        .msg-area { padding: 30px; display: flex; flex-direction: column; gap: 18px; max-height: 70vh; overflow-y: auto; scrollbar-width: thin; }
+        .msg-item { display: flex; gap: 18px; background: rgba(255,255,255,0.02); padding: 18px; border-radius: 14px; border: 1px solid rgba(255,255,255,0.03); transition: 0.2s; }
+        .msg-item:hover { background: rgba(255,255,255,0.04); }
+        .avatar { width: 45px; height: 45px; border-radius: 50%; background: var(--primary); flex-shrink: 0; background-size: cover; background-position: center; border: 2px solid var(--border); }
         .msg-content { flex-grow: 1; }
-        .u-info { font-weight: 800; font-size: 0.95rem; margin-bottom: 5px; display: flex; justify-content: space-between; }
-        .text { color: #d0d6e0; line-height: 1.5; font-size: 0.9rem; }
-        .att-img { margin-top: 10px; max-width: 100%; border-radius: 8px; border: 1px solid var(--border); }
+        .u-info { font-weight: 800; font-size: 1rem; margin-bottom: 6px; display: flex; justify-content: space-between; align-items: center; }
+        .u-info .time { opacity: 0.3; font-size: 0.75rem; font-weight: 400; }
+        .text { color: #e1e7f0; line-height: 1.6; font-size: 0.95rem; word-break: break-word; }
+        .att-img { margin-top: 15px; max-width: 100%; border-radius: 10px; border: 1px solid var(--border); cursor: pointer; transition: 0.3s; }
+        .att-img:hover { opacity: 0.8; }
+
+        ::-webkit-scrollbar { width: 6px; }
+        ::-webkit-scrollbar-thumb { background: var(--border); border-radius: 10px; }
     </style>
 </head>
 <body>
 
 <nav class="navbar">
     <div class="logo" onclick="showDashboard()">STEELPORT <span>HUB</span></div>
-    <div style="font-size: 0.8rem; color: var(--muted);"><i class="fas fa-shield-alt"></i> AES-256 Protected</div>
+    <div style="font-size: 0.8rem; color: var(--muted); font-weight: 600;"><i class="fas fa-shield-alt" style="color:var(--primary)"></i> AES-256 GÜVENLİ</div>
 </nav>
 
 <div class="container" id="section-login">
     <div class="login-card">
-        <i class="fas fa-key"></i>
+        <i class="fas fa-unlock-alt"></i>
         <h2>Erişim Kilidi</h2>
-        <p style="color: var(--muted); font-size: 0.85rem;">Bu bilet şifrelenmiştir. Devam etmek için kodu girin.</p>
-        <input type="text" id="passInput" placeholder="6 Haneli Şifre">
+        <p style="color: var(--muted); font-size: 0.9rem;">Bu bilet şifrelenmiştir. Devam etmek için 6 haneli erişim kodunu girin.</p>
+        <input type="text" id="passInput" placeholder="KODU YAZ" maxlength="32">
         <button onclick="unlockTicket()">KİLİDİ AÇ</button>
     </div>
 </div>
 
 <div class="container" id="section-dashboard">
     <div class="dashboard-header">
-        <h2><i class="fas fa-folder-open"></i> Arşivim (Dashboard)</h2>
-        <button class="btn" style="color:var(--danger)" onclick="clearArchive()">Temizle</button>
+        <h2><i class="fas fa-archive" style="margin-right:10px; color:var(--primary)"></i> Arşivlenen Biletler</h2>
+        <button class="btn btn-danger" onclick="clearArchive()"><i class="fas fa-trash-alt"></i> Arşivi Temizle</button>
     </div>
     <div class="ticket-grid" id="dashboardGrid"></div>
 </div>
 
 <div class="container" id="section-viewer">
     <div class="action-btns">
-        <button class="btn" onclick="exportPDF()"><i class="fas fa-file-pdf"></i> PDF İndir</button>
-        <button class="btn" onclick="exportHTML()"><i class="fas fa-code"></i> HTML İndir</button>
-        <button class="btn" onclick="copyLink()"><i class="fas fa-share"></i> Paylaş</button>
+        <button class="btn" onclick="showDashboard()"><i class="fas fa-arrow-left"></i> Geri Dön</button>
+        <button class="btn" onclick="exportPDF()"><i class="fas fa-file-pdf" style="color:#ff4d4d"></i> PDF İndir</button>
+        <button class="btn" onclick="exportHTML()"><i class="fas fa-file-code" style="color:#4da6ff"></i> HTML İndir</button>
+        <button class="btn" onclick="copyLink()"><i class="fas fa-link"></i> Linki Kopyala</button>
     </div>
     <div class="transcript-wrap" id="printArea">
         <div class="t-header">
-            <h1 id="view-title">#Kanal</h1>
-            <p id="view-meta"></p>
+            <h1 id="view-title">#Bilet Yükleniyor...</h1>
+            <p id="view-meta" style="color:var(--muted); font-weight:600;"></p>
         </div>
         <div class="msg-area" id="view-messages"></div>
     </div>
 </div>
 
 <script>
-    const params = new URLSearchParams(window.location.search);
-    const rawV = params.get('v');
+    // URL Parametresini Al
+    const urlParams = new URLSearchParams(window.location.search);
+    const vParam = urlParams.get('v');
 
     window.onload = () => {
-        if (rawV) {
-            // Eğer daha önce bu veriyi bu tarayıcıda açtıysak şifre sorma
+        if (vParam) {
+            // Eğer daha önce açıldıysa direkt göster
             const archive = JSON.parse(localStorage.getItem('steelport_archive') || '[]');
-            const saved = archive.find(i => i.raw === rawV);
+            const saved = archive.find(i => i.raw === vParam);
             if (saved) {
                 renderTicket(saved.data);
             } else {
@@ -113,20 +134,36 @@
         }
     };
 
+    // ŞİFRE ÇÖZME FONKSİYONU (FIXED)
     function unlockTicket() {
         const pass = document.getElementById('passInput').value.trim();
+        if(!pass) return alert("Lütfen şifreyi girin!");
+
         try {
-            // AES Decrypt
+            // Python tarafıyla uyumlu Key ve IV ayarları
+            // Şifreyi 32 bayta tamamla (AES-256 için)
             const key = CryptoJS.enc.Utf8.parse(pass.padEnd(32, ' ').substring(0, 32));
             const iv = CryptoJS.enc.Utf8.parse('1234567890123456');
-            const decrypted = CryptoJS.AES.decrypt(rawV, key, { iv: iv });
-            const data = JSON.parse(decrypted.toString(CryptoJS.enc.Utf8));
 
-            // Arşive Kaydet (Sonsuz Login için)
-            saveToArchive(rawV, data);
+            // Şifreyi Çöz (CBC Modu ve Pkcs7 Padding)
+            const decrypted = CryptoJS.AES.decrypt(vParam, key, { 
+                iv: iv, 
+                mode: CryptoJS.mode.CBC, 
+                padding: CryptoJS.pad.Pkcs7 
+            });
+
+            const decryptedStr = decrypted.toString(CryptoJS.enc.Utf8);
+            
+            if (!decryptedStr) throw new Error("Şifre Yanlış");
+
+            const data = JSON.parse(decryptedStr);
+
+            // Başarılı: Kaydet ve Göster
+            saveToArchive(vParam, data);
             renderTicket(data);
         } catch(e) {
-            alert("Hatalı Şifre veya Bozuk Veri!");
+            console.error("Çözme Hatası:", e);
+            alert("❌ Hatalı Şifre veya Bozuk Veri!");
         }
     }
 
@@ -139,26 +176,37 @@
     }
 
     function renderTicket(data) {
+        // Ekranları değiştir
         document.querySelectorAll('.container').forEach(c => c.style.display = 'none');
         document.getElementById('section-viewer').style.display = 'block';
 
-        document.getElementById('view-title').innerText = "#" + data.channel;
-        document.getElementById('view-meta').innerText = `${data.server} | ${data.date}`;
+        // Başlıkları doldur
+        document.getElementById('view-title').innerText = "#" + (data.channel || "Bilet");
+        document.getElementById('view-meta').innerText = `${data.server || 'Sunucu'} | ${data.date || 'Tarih'}`;
         
+        // Mesajları listele
         const area = document.getElementById('view-messages');
         area.innerHTML = data.messages.map(m => `
             <div class="msg-item">
-                <div class="avatar" style="background-image: url('${m.a || ''}')"></div>
+                <div class="avatar" style="background-image: url('${m.a || 'https://cdn.discordapp.com/embed/avatars/0.png'}')"></div>
                 <div class="msg-content">
-                    <div class="u-info"><span>${m.u}</span><span style="opacity:0.3; font-size:0.7rem;">${m.d}</span></div>
-                    <div class="text">${m.t}</div>
-                    ${m.i ? `<img src="${m.i}" class="att-img">` : ''}
+                    <div class="u-info">
+                        <span>${m.u || 'Bilinmeyen'}</span>
+                        <span class="time">${m.d || '--:--'}</span>
+                    </div>
+                    <div class="text">${m.t || ''}</div>
+                    ${m.i ? `<img src="${m.i}" class="att-img" onclick="window.open(this.src)">` : ''}
                 </div>
             </div>
         `).join('');
+        
+        // Scroll'u en alta çek
+        area.scrollTop = 0;
     }
 
     function showDashboard() {
+        // Temizle ve Dashboard'u göster
+        window.history.replaceState({}, document.title, window.location.pathname);
         document.querySelectorAll('.container').forEach(c => c.style.display = 'none');
         document.getElementById('section-dashboard').style.display = 'block';
         
@@ -166,48 +214,70 @@
         const grid = document.getElementById('dashboardGrid');
         
         if (archive.length === 0) {
-            grid.innerHTML = "<p style='color:var(--muted)'>Henüz kaydedilmiş bilet yok.</p>";
+            grid.innerHTML = `
+                <div style="grid-column: 1/-1; text-align: center; padding: 50px; background:var(--card); border-radius:15px; border:1px dashed var(--border);">
+                    <i class="fas fa-folder-open fa-3x" style="color:var(--muted); margin-bottom:15px;"></i>
+                    <p style="color:var(--muted)">Henüz kaydedilmiş bir bilet bulunmuyor.</p>
+                </div>`;
             return;
         }
 
         grid.innerHTML = archive.map(item => `
-            <div class="ticket-box" onclick="location.href='?v=${item.raw}'">
+            <div class="ticket-box" onclick="renderTicketFromDashboard('${item.raw}')">
                 <h4>#${item.data.channel}</h4>
                 <p><i class="fas fa-server"></i> ${item.data.server}</p>
                 <p><i class="far fa-calendar-alt"></i> ${item.data.date}</p>
+                <p style="margin-top:10px; color:var(--primary); font-weight:700;">Görüntüle <i class="fas fa-chevron-right"></i></p>
             </div>
         `).join('');
     }
 
+    function renderTicketFromDashboard(raw) {
+        const archive = JSON.parse(localStorage.getItem('steelport_archive') || '[]');
+        const ticket = archive.find(i => i.raw === raw);
+        if(ticket) renderTicket(ticket.data);
+    }
+
     function clearArchive() {
-        if(confirm("Tüm arşivi temizlemek istediğine emin misin?")) {
+        if(confirm("⚠️ Arşivi temizlemek istediğinizden emin misiniz? Bu işlem geri alınamaz!")) {
             localStorage.removeItem('steelport_archive');
-            location.href = "index.html";
+            showDashboard();
         }
     }
 
     function exportPDF() {
         const el = document.getElementById('printArea');
-        html2pdf().from(el).set({
-            margin: 1,
-            filename: 'transcript.pdf',
+        const title = document.getElementById('view-title').innerText;
+        const opt = {
+            margin: 0.5,
+            filename: `${title}_Transcript.pdf`,
+            image: { type: 'jpeg', quality: 0.98 },
             html2canvas: { scale: 2, backgroundColor: '#0f121a' },
             jsPDF: { unit: 'in', format: 'letter', orientation: 'portrait' }
-        }).save();
+        };
+        html2pdf().from(el).set(opt).save();
     }
 
     function exportHTML() {
         const content = document.getElementById('printArea').innerHTML;
-        const blob = new Blob([`<html><head><style>body{background:#080a0f;color:white;font-family:sans-serif;padding:20px;}</style></head><body>${content}</body></html>`], {type: "text/html"});
+        const title = document.getElementById('view-title').innerText;
+        const style = `
+            body { background:#080a0f; color:white; font-family:sans-serif; padding:40px; }
+            .t-header { border-bottom:1px solid #333; padding-bottom:20px; margin-bottom:20px; }
+            .msg-item { background:#161a25; padding:15px; margin-bottom:10px; border-radius:10px; display:flex; gap:15px; }
+            .avatar { width:40px; height:40px; border-radius:50%; background:#0066ff; }
+            .u-info { font-weight:bold; color:#0066ff; }
+        `;
+        const blob = new Blob([`<html><head><style>${style}</style></head><body>${content}</body></html>`], {type: "text/html"});
         const a = document.createElement("a");
         a.href = URL.createObjectURL(blob);
-        a.download = "transcript.html";
+        a.download = `${title}.html`;
         a.click();
     }
 
     function copyLink() {
         navigator.clipboard.writeText(window.location.href);
-        alert("Bağlantı kopyalandı!");
+        alert("✅ Bağlantı başarıyla kopyalandı!");
     }
 </script>
 </body>
